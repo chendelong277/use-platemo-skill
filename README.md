@@ -26,7 +26,3 @@ cp -r use-platemo ~/.claude/skills/
 - `use-platemo/` - The skill package
 - `use-platemo-skill.zip` - Distributable package
 - `use-platemo-skill-guide.txt` - Detailed guide (Chinese)
-
-## License
-
-Copyright (c) 2025 BIMK Group
