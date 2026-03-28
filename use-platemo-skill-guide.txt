@@ -1,0 +1,175 @@
+use-platemo skill package guide
+================================
+
+1. 这个包里是什么
+
+这个导出的包是一个给 Codex 以及其他LLM agnet 工具 使用的 skill，用来更高效地操作本地 PlatEMO MATLAB 平台。
+它不是 PlatEMO 本体，而是一层面向 agent 的工作指南。它主要教 agent：
+
+- PlatEMO 的真实入口文件在哪里
+- 如何运行 benchmark problem 和 user-defined problem
+- 如何定位算法、问题、指标和 GUI 源码
+- 遇到不懂的地方时先读哪些文件
+- 为什么面对 PlatEMO 这种持续更新的项目时，读当前源码比依赖记忆更可靠
+
+2. skill 文档结构怎么理解
+
+skill 文件夹名是 `use-platemo/`。它内部的主要结构如下：
+
+- `SKILL.md`
+  这是核心文件。
+  它包含三部分：
+  - `name`：skill 名称
+  - `description`：skill 的作用，以及什么场景下应该触发它
+  - 正文：agent 实际执行时要遵循的工作流、规则和判断方式
+
+- `references/run-workflow.md`
+  这是运行手册。
+  里面写了如何调用 `platemo(...)`、如何用 MATLAB batch 模式运行、如何传算法和问题参数、如何定义 user-defined problem、以及如何收集结果。
+
+- `references/source-map.md`
+  这是源码导航图。
+  里面说明了遇到问题时应该优先看哪些文件、各个目录分别负责什么、GUI 如何读取文件头部注释、以及该用哪些 `rg` 命令快速找代码。
+
+- `agents/openai.yaml`
+  这是 UI 元数据文件。
+  它不是 skill 的核心逻辑，但有些技能列表界面会用它来展示 skill 的名称、描述和默认提示词。
+
+3. 安装方法
+
+方法 A：直接在当前仓库使用
+
+如果你当前工作区里已经有：
+
+`skills/use-platemo`
+
+那这个 skill 在本仓库里其实已经就位了，通常不需要再额外安装。
+
+方法 B：手动安装到另一个 Codex 环境
+
+1. 解压 `use-platemo-skill.zip`
+2. 把解压出来的 `use-platemo/` 文件夹复制到你的 Codex skills 目录，通常是：
+
+`$CODEX_HOME/skills/use-platemo`
+
+3. 如果你的环境不支持 skills 热加载，就重启一次 Codex 会话
+
+方法 C：安装到项目本地的 skills 目录
+
+如果你的项目自己维护一个 `skills/` 目录，就把它复制到：
+
+`<your-project>/skills/use-platemo`
+
+4. 怎么触发或使用这个 skill
+
+常见有两种方式：
+
+- 显式触发
+  直接提到 skill 名称，例如：
+  `use-platemo`
+  或者说：
+  "use the use-platemo skill"
+
+- 自然触发
+  直接让 agent 去运行、排查、解释或扩展一个本地 PlatEMO 仓库里的内容
+
+典型请求包括：
+
+- "用 PlatEMO 跑 NSGA-II on DTLZ2"
+- "找一下 PlatEMO 里 IGD 是在哪里算的"
+- "给 PlatEMO 新增一个 problem class"
+- "解释 PlatEMO GUI 是怎么按 labels 过滤算法的"
+
+5. 为什么它比每次让 agent 重新探索 PlatEMO 更有优势
+
+核心优势不是“更聪明”，而是“把重复探索压缩成可复用经验”。
+
+主要优势：
+
+- 启动更快
+  agent 不需要每次都重新摸 `platemo.m`、`ALGORITHM.m`、`PROBLEM.m`、`UserProblem.m`、metric 流程和 GUI label 解析。
+
+- 行为更稳定
+  这个 skill 强制 agent 采用 source-first 工作流，所以更不容易凭旧记忆乱答。
+
+- 更贴近当前仓库
+  它是基于这个仓库里的真实 PlatEMO 树写出来的，不是泛化到旧版本 PlatEMO 的模糊经验。
+
+- 降低用户提示负担
+  用户不需要每次都重复补充：
+  “先读源码再回答”
+  “先看 release note”
+  “先确认 metric 实现”
+  这类约束。
+
+- 更适合排错
+  skill 把真实运行链路先整理好了，agent 更容易顺着入口一路查到具体算法、问题、helper 或 metric。
+
+6. 需要注意的局限性
+
+这个 skill 会帮很多忙，但它不能替代正常的工程前提。
+
+局限性包括：
+
+- 它仍然依赖真实 PlatEMO 仓库
+  如果仓库里没有 `PlatEMO/`，那这个 skill 的价值会大幅下降。
+
+- 它仍然依赖 MATLAB 和环境健康度
+  如果 MATLAB、本地 toolbox、`startup.m`、path hook 或用户级配置有问题，skill 不能自动抹平这些环境问题。
+
+- 它当前更偏“指导型”，不是“全自动脚本型”
+  它主要告诉 agent 应该怎么找、怎么读、怎么跑，但目前还没有附带一套专门的辅助脚本来自动打包运行结果、自动生成新类模板或自动解析输出。
+
+- 它本身也可能部分过时
+  虽然 skill 已经明确要求 agent 先读当前源码，以降低过时风险，但 skill 自己仍然需要随着 PlatEMO 演进适度维护。
+
+- 它当前覆盖有重点
+  目前最强的是核心命令行使用、源码导航、metric 路径和扩展入门；对更深层的 GUI 细节、creation module 和 NeuroEA 专题仍然可以继续加深。
+
+7. 正确的使用心态
+
+把这个 skill 当成一张整理过的地图，而不是源码阅读的替代品。
+
+更稳妥的使用方式是：
+
+1. 先用 skill 缩小搜索范围，找到正确入口和搜索命令
+2. 再去读实际目标文件
+3. 最后依据当前源码做判断和修改
+
+这对 PlatEMO 特别重要，因为：
+
+- 目录结构会演进
+- 算法和问题会持续增加
+- 文件头部注释会影响 GUI 行为
+- 某些 problem 会重写默认 metric 或 evaluation 逻辑
+
+8. 可扩展方向
+
+这个包后续可以往几个很实际的方向继续增强：
+
+- 增加“新建 algorithm / problem 模板”的参考文档
+- 增加“MATLAB path / toolbox / startup 异常”排查文档
+- 增加专门解释 GUI 模块和 label 解析机制的 reference
+- 增加专门解释 metrics、保存的 MAT 文件和后处理流程的 reference
+- 增加专门讲 NeuroEA 和 creation module 的 reference
+- 增加一键环境检查或结果检查的小脚本
+- 如果这个仓库后续对 PlatEMO 做了本地定制，再补充项目特定说明
+
+9. 当前文件夹里导出的交付物
+
+导出完成后，当前文件夹里至少应该有：
+
+- `use-platemo-skill.zip`
+- `use-platemo-skill-guide.txt`
+
+其中：
+
+- `use-platemo-skill.zip` 是可分发的 skill 包
+- `use-platemo-skill-guide.txt` 是给第一次接触 skill 的人看的解释文档
+
+  作者信息
+  --------------
+  作者：Chen Delong
+  联系方式：chendelong277@nudt.edu.cn
+  版本/整理日期：2026-03-28
+  工具(skill)：skill-creator

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use PlatEMO"
+  short_description: "Run, inspect, and extend the local PlatEMO MATLAB platform."
+  default_prompt: "Use the local PlatEMO checkout in this repository to run optimization tasks, inspect algorithms/problems/metrics, and read the source when behavior is unclear."
